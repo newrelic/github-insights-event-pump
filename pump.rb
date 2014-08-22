@@ -39,21 +39,22 @@ class Pump
     payload = JSON.parse resp.body
     dup = 0
     insights_events = []
+    github_events = 0
     while (event = payload.pop) do
       id = event['id'].to_i
       if (id <= @last)
-        # puts " >> #{id}"
         dup += 1
         next
       end
+      github_events += 1
       @last = id
-      puts "#{event['id']} : #{event['type']} - #{event['actor']['url']}"
+      # puts "#{event['id']} : #{event['type']} - #{event['actor']['url']}"
       insights_events += process(event['payload'], nil, event['type'])
     end
-
-    puts "skipped #{dup} duplicates from last request"
-    puts "remaining until cutoff: #{resp.headers['x-ratelimit-remaining']}"
-    puts "reset in #{(resp.headers['x-ratelimit-reset'].to_i - Time.now.to_i)/60} minutes"
+    puts "#{Time.now.strftime "%D %H:%M:%S"}: processed #{github_events} github events and inserted #{insights_events.length} events into insights..."
+    puts "  skipped #{dup} duplicates from last request"
+    puts "  remaining until cutoff: #{resp.headers['x-ratelimit-remaining']}"
+    puts "  reset in #{(resp.headers['x-ratelimit-reset'].to_i - Time.now.to_i)/60} minutes"
 
     if (insights_events.empty?)
       puts "Nothing in the payload!"

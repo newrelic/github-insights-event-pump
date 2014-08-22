@@ -3,7 +3,7 @@ module PayloadProcessor
 
   def process(payload, app_id, event_name)
 
-    event = breakdown(event, payload)
+    event = breakdown(event_name, payload)
 
     repo = find(payload, 'repository/name')
     user = find(payload, 'sender/login') ||
@@ -26,7 +26,7 @@ module PayloadProcessor
 
     commits = find(payload, "commits")
     # Should read the integration or default branch, not master
-    if (commits && ref =~ %r{/master$})
+    if commits
       events += process_commits(commits, event_attrs)
     end
     events
@@ -75,16 +75,12 @@ module PayloadProcessor
       author = find(commit, 'author/username') || find(commit, 'author/email')
       name = find(commit, 'author/name')
       sha = find(commit, 'id') || find(commit, 'sha')
-      files = (commit['added']||[]) + (commit['modified']||[])
-      files.each do | file |
-        event = default_attrs.dup
-        event['userName'] = name if author
-        event['sha'] = sha
-        event['user'] = author if author
-        event['file'] = file
-        event['gitEventType'] = 'change'
-        events << event
-      end
+      event = default_attrs.dup
+      event['userName'] = name if author
+      event['sha'] = sha
+      event['user'] = author if author
+      event['gitEventType'] = 'change'
+      events << event
     end
     events
   end
