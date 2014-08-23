@@ -3,7 +3,7 @@ module PayloadProcessor
 
   def process(payload, app_id, event_name)
 
-    event = breakdown(event_name, payload)
+    event_name = breakdown(event_name, payload)
 
     repo = find(payload, 'repository/name')
     user = find(payload, 'sender/login') ||
@@ -49,22 +49,22 @@ module PayloadProcessor
     # With pull requests we distinguish between each of the PR
     # actions by appending them to the event key
     case event
-    when 'pull_request'
+    when 'PullRequestEvent'
       action = find(payload, 'action')
       # With closed actions we distinguish between PR's that were merged
       # and those that were closed without merging (cancelled).
       if (action == 'closed')
         merged = find(payload, 'pull_request/merged')
-        action = (merged == 'true') ? 'merged' : 'cancelled'
+        action = (merged == 'true') ? 'Merged' : 'Cancelled'
       end
-      event = "pull_request_#{action}"
-    when 'create'
+      event = "PullRequest#{action}"
+    when 'CreateEvent'
       ref_type = find(payload, 'ref_type')
-      event = "create_#{ref_type}"
+      event = "Create#{ref_type.capitalize}"
 
-    when 'status'
+    when 'StatusEvent'
       state  = find(payload, 'state')
-      event = "commit_#{state}"
+      event = "Commit#{state.capitalize}"
     end
     return event
   end
@@ -79,7 +79,7 @@ module PayloadProcessor
       event['userName'] = name if author
       event['sha'] = sha
       event['user'] = author if author
-      event['gitEventType'] = 'change'
+      event['gitEventType'] = 'Commit'
       events << event
     end
     events
