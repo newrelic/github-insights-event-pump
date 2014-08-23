@@ -49,7 +49,7 @@ class Pump
       github_events += 1
       @last = id
       # puts "#{event['id']} : #{event['type']} - #{event['actor']['url']}"
-      insights_events += process(event['payload'], nil, event['type'])
+      insights_events += process event
     end
     puts "#{Time.now.strftime "%D %H:%M:%S"}: processed #{github_events} github events and inserted #{insights_events.length} events into insights..."
     puts "  skipped #{dup} duplicates from last request"
