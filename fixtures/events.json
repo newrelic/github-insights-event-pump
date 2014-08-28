@@ -4,64 +4,64 @@
     "type": "IssueCommentEvent",
     "actor": {
       "id": 4965052,
-      "login": "xairy",
-      "gravatar_id": "a65efb4c520b82ef0ca461dda48cb356",
-      "url": "https://api.github.com/users/xairy",
-      "avatar_url": "https://avatars.githubusercontent.com/u/4965052?"
+      "login": "bearcub",
+      "gravatar_id": "f345a65efb4c520b82ef0ca461ddcb356",
+      "url": "https://api.github.com/users/bearcub",
+      "avatar_url": "https://avatars.githubusercontent.com/u/778766?"
     },
     "repo": {
       "id": 23240066,
-      "name": "xairy/asan-mirror",
-      "url": "https://api.github.com/repos/xairy/asan-mirror"
+      "name": "bearcub/asan-mirror",
+      "url": "https://api.github.com/repos/bearcub/asan-mirror"
     },
     "payload": {
       "action": "created",
       "issue": {
-        "url": "https://api.github.com/repos/xairy/asan-mirror/issues/10",
-        "labels_url": "https://api.github.com/repos/xairy/asan-mirror/issues/10/labels{/name}",
-        "comments_url": "https://api.github.com/repos/xairy/asan-mirror/issues/10/comments",
-        "events_url": "https://api.github.com/repos/xairy/asan-mirror/issues/10/events",
-        "html_url": "https://github.com/xairy/asan-mirror/issues/10",
+        "url": "https://api.github.com/repos/bearcub/asan-mirror/issues/10",
+        "labels_url": "https://api.github.com/repos/bearcub/asan-mirror/issues/10/labels{/name}",
+        "comments_url": "https://api.github.com/repos/bearcub/asan-mirror/issues/10/comments",
+        "events_url": "https://api.github.com/repos/bearcub/asan-mirror/issues/10/events",
+        "html_url": "https://github.com/bearcub/asan-mirror/issues/10",
         "id": 40951019,
         "number": 10,
         "title": "Some programs hang because of the replaced CFAllocator",
         "user": {
-          "login": "xairy",
+          "login": "bearcub",
           "id": 4965052,
           "avatar_url": "https://avatars.githubusercontent.com/u/4965052?v=2",
           "gravatar_id": "a65efb4c520b82ef0ca461dda48cb356",
-          "url": "https://api.github.com/users/xairy",
-          "html_url": "https://github.com/xairy",
-          "followers_url": "https://api.github.com/users/xairy/followers",
-          "following_url": "https://api.github.com/users/xairy/following{/other_user}",
-          "gists_url": "https://api.github.com/users/xairy/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/xairy/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/xairy/subscriptions",
-          "organizations_url": "https://api.github.com/users/xairy/orgs",
-          "repos_url": "https://api.github.com/users/xairy/repos",
-          "events_url": "https://api.github.com/users/xairy/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/xairy/received_events",
+          "url": "https://api.github.com/users/bearcub",
+          "html_url": "https://github.com/bearcub",
+          "followers_url": "https://api.github.com/users/bearcub/followers",
+          "following_url": "https://api.github.com/users/bearcub/following{/other_user}",
+          "gists_url": "https://api.github.com/users/bearcub/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/bearcub/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/bearcub/subscriptions",
+          "organizations_url": "https://api.github.com/users/bearcub/orgs",
+          "repos_url": "https://api.github.com/users/bearcub/repos",
+          "events_url": "https://api.github.com/users/bearcub/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/bearcub/received_events",
           "type": "User",
           "site_admin": false
         },
         "labels": [
           {
-            "url": "https://api.github.com/repos/xairy/asan-mirror/labels/bug",
+            "url": "https://api.github.com/repos/bearcub/asan-mirror/labels/bug",
             "name": "bug",
             "color": "fc2929"
           },
           {
-            "url": "https://api.github.com/repos/xairy/asan-mirror/labels/imported",
+            "url": "https://api.github.com/repos/bearcub/asan-mirror/labels/imported",
             "name": "imported",
             "color": "FFFFFF"
           },
           {
-            "url": "https://api.github.com/repos/xairy/asan-mirror/labels/OpSys-OSX",
+            "url": "https://api.github.com/repos/bearcub/asan-mirror/labels/OpSys-OSX",
             "name": "OpSys-OSX",
             "color": "FFFFFF"
           },
           {
-            "url": "https://api.github.com/repos/xairy/asan-mirror/labels/Priority-Medium",
+            "url": "https://api.github.com/repos/bearcub/asan-mirror/labels/Priority-Medium",
             "name": "Priority-Medium",
             "color": "FFFFFF"
           }
@@ -74,35 +74,35 @@
         "created_at": "2014-08-22T21:14:30Z",
         "updated_at": "2014-08-22T21:21:07Z",
         "closed_at": "2014-08-22T21:14:31Z",
-        "body": "_From [gli...@chromium.org](https://code.google.com/u/103313743608689176782/) on November 21, 2011 13:12:15_\n\n=====================================================================\r\n#import <Foundation/Foundation.h>\r\n#import <WebKit/WebKit.h>\r\n\r\n@interface WebKitDelegate : NSObject\r\n@end\r\n\r\n@implementation WebKitDelegate\r\n\r\n- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame\r\n{\r\n    NSLog(@\"didFinishLoadForFrame\");\r\n    [sender displayIfNeeded];\r\n    if (frame == [sender mainFrame])\r\n\t\texit(0);\r\n}\r\n\r\n- (NSURLRequest *)webView:(WebView *)sender resource:(id)identifier willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse fromDataSource:(WebDataSource *)dataSource;\r\n{\r\n\tNSLog(@\"Will send request &#37;@ (redirect &#37;@)\",request,redirectResponse);\r\n\treturn request;\r\n}\r\n\r\n- (void)webView:(WebView *)sender resource:(id)identifier didReceiveResponse:(NSURLResponse *)response fromDataSource:(WebDataSource *)dataSource\r\n{\r\n\tNSLog(@\"Got response &#37;@\",response);\r\n}\r\n@end\r\n\r\nint main(int argc, char * const argv[])\r\n{\r\n    //// CFAllocatorSetDefault(kCFAllocatorMallocZone);\r\n\tNSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];\r\n    WebView *webView = [[WebView alloc] initWithFrame:NSMakeRect(0, 0, 800, 600) frameName:nil groupName:@\"org.webkit.parseWebKit\"];\r\n    WebKitDelegate* delegate = [[WebKitDelegate alloc] init];\r\n    [webView setFrameLoadDelegate:delegate];\r\n\t[webView setResourceLoadDelegate:delegate];\r\n\t[[webView mainFrame] loadHTMLString:@\"<html><body>test</body></html>\" baseURL:nil];\r\n\t[[NSRunLoop currentRunLoop] run];\r\n    [pool drain];\r\n    return 0;\r\n}\r\n=====================================================================\r\n\r\nThe program above hangs under ASan. If the \"CFAllocatorSetDefault\" line is uncommented, the program hangs without ASan.\n\n_Original issue: http://code.google.com/p/address-sanitizer/issues/detail?id=10_"
+        "body": "This looks great, thanks"
       },
       "comment": {
-        "url": "https://api.github.com/repos/xairy/asan-mirror/issues/comments/53121890",
-        "html_url": "https://github.com/xairy/asan-mirror/issues/10#issuecomment-53121890",
-        "issue_url": "https://api.github.com/repos/xairy/asan-mirror/issues/10",
+        "url": "https://api.github.com/repos/bearcub/asan-mirror/issues/comments/53121890",
+        "html_url": "https://github.com/bearcub/asan-mirror/issues/10#issuecomment-53121890",
+        "issue_url": "https://api.github.com/repos/bearcub/asan-mirror/issues/10",
         "id": 53121890,
         "user": {
-          "login": "xairy",
+          "login": "bearcub",
           "id": 4965052,
           "avatar_url": "https://avatars.githubusercontent.com/u/4965052?v=2",
           "gravatar_id": "a65efb4c520b82ef0ca461dda48cb356",
-          "url": "https://api.github.com/users/xairy",
-          "html_url": "https://github.com/xairy",
-          "followers_url": "https://api.github.com/users/xairy/followers",
-          "following_url": "https://api.github.com/users/xairy/following{/other_user}",
-          "gists_url": "https://api.github.com/users/xairy/gists{/gist_id}",
-          "starred_url": "https://api.github.com/users/xairy/starred{/owner}{/repo}",
-          "subscriptions_url": "https://api.github.com/users/xairy/subscriptions",
-          "organizations_url": "https://api.github.com/users/xairy/orgs",
-          "repos_url": "https://api.github.com/users/xairy/repos",
-          "events_url": "https://api.github.com/users/xairy/events{/privacy}",
-          "received_events_url": "https://api.github.com/users/xairy/received_events",
+          "url": "https://api.github.com/users/bearcub",
+          "html_url": "https://github.com/bearcub",
+          "followers_url": "https://api.github.com/users/bearcub/followers",
+          "following_url": "https://api.github.com/users/bearcub/following{/other_user}",
+          "gists_url": "https://api.github.com/users/bearcub/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/bearcub/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/bearcub/subscriptions",
+          "organizations_url": "https://api.github.com/users/bearcub/orgs",
+          "repos_url": "https://api.github.com/users/bearcub/repos",
+          "events_url": "https://api.github.com/users/bearcub/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/bearcub/received_events",
           "type": "User",
           "site_admin": false
         },
         "created_at": "2014-08-22T21:21:07Z",
         "updated_at": "2014-08-22T21:21:07Z",
-        "body": "_From [konstant...@gmail.com](https://code.google.com/u/100288189310628530200/) on May 22, 2012 01:39:25_\n\n**Labels:** OpSys-OSX  \n"
+        "body": "Looks great"
       }
     },
     "public": true,
@@ -113,9 +113,9 @@
     "type": "CreateEvent",
     "actor": {
       "id": 183212,
-      "login": "klemmster",
+      "login": "bearman",
       "gravatar_id": "668c16bc698ed0dafd1e6174c9679cc9",
-      "url": "https://api.github.com/users/klemmster",
+      "url": "https://api.github.com/users/bearman",
       "avatar_url": "https://avatars.githubusercontent.com/u/183212?"
     },
     "repo": {

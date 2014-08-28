@@ -12,8 +12,10 @@ module PayloadProcessor
            find(payload, 'pusher/name')
     org =  find(event, 'org/login')
     sha =  find(payload, 'sha') ||
-           find(payload, 'pull_request/head/sha')
-    commits = find(payload, "commits")
+    text = find(payload, 'issue/body') ||
+           find(payload, 'comment/body') ||
+           find(payload, 'pull_request/body') ||
+           find(payload, 'message')
 
     events = []
     event_attrs = { }
@@ -22,7 +24,9 @@ module PayloadProcessor
     event_attrs['user'] = user if user
     event_attrs['repo'] = repo if repo
     event_attrs['org'] = org if org
+    event_attrs['text'] = text if text
     merge_counts(event_attrs, payload)
+
     events << event_attrs
 
     commits = find(payload, "commits")
@@ -32,6 +36,18 @@ module PayloadProcessor
     end
     events
   end
+
+  # Not used yet -- for later cleanup -- whk
+  def merge_property(attrs, root, key, *paths)
+    for path in paths do
+      val = find(root, path)
+      if val
+        attrs[key] = val.to_s[0..2046]
+        break
+      end
+    end
+  end
+
 
   # Traverse the hash via '/' separated keys, returning nil if any part is missing
   def find(hash, path)
@@ -47,6 +63,7 @@ module PayloadProcessor
   private
 
   def merge_counts counts, payload
+
     counts.merge! count('wtf', payload, /wtf/i, 'issue/body','comment/body', 'pull_request/body', 'message')
     counts.merge! count('fix', payload, /\bfix/i, 'issue/body','comment/body', 'pull_request/body', 'message')
     counts.merge! count('bug', payload, /\bbugs?\b/i, 'issue/body','comment/body', 'pull_request/body', 'message')
