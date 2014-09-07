@@ -6,13 +6,14 @@ require 'awesome_print'
 require 'faraday'
 require 'yaml'
 require 'payload_processor'
+require 'http_util'
 
 class Pump
   include PayloadProcessor
+  include HttpUtil
   attr_reader :config
 
   def initialize(config)
-    @http = Faraday.new
     @last = 0
     raise "Need config 'token'" unless config['token']
     raise "Need config 'interval'" unless config['interval']
@@ -23,61 +24,45 @@ class Pump
 
   def run
     while (true) do
-      fetch
-      sleep config['interval']
+      last_request = Time.now.to_i
+      begin
+        download_activity
+#      rescue => e
+#        $stderr.puts e
+      end
+      if @requests_remaining <= 0
+        puts "Reached request limit.  Sleeping #{@reset_in/60} minutes...."
+        sleep @reset_in
+      else
+        interval = (last_request + config['interval']) - Time.now.to_i
+        sleep interval if interval > 0
+      end
     end
   end
 
-  def fetch
-    url =  "https://api.github.com/events"
-    resp = @http.get url, {}, 'Authorization' => "token #{config['token']}"
-    if resp.status != 200
-      puts "Problem with request: #{resp.inspect}"
-      return
+  def download_activity
+    payload = get "https://api.github.com/events"
+    puts "\n#{Time.now.strftime "%D %H:%M:%S"}: processing #{payload.length} github events..."
+    if @last && payload.first['id'].to_i > @last
+      puts "  missed up to #{payload.first['id'].to_i - @last - 1} events."
     end
-
-    payload = JSON.parse resp.body
     dup = 0
-    insights_events = []
-    github_events = 0
-    while (event = payload.pop) do
-      id = event['id'].to_i
+    @last ||= 0
+    print "  "
+    while (github_event = payload.pop) do
+      id = github_event['id'].to_i
       if (id <= @last)
         dup += 1
         next
       end
-      github_events += 1
-      @last = id
-      # puts "#{event['id']} : #{event['type']} - #{event['actor']['url']}"
-      insights_events += process event
+      process github_event
     end
-    puts "#{Time.now.strftime "%D %H:%M:%S"}: processed #{github_events} github events and inserted #{insights_events.length} events into insights..."
-    puts "  skipped #{dup} duplicates from last request"
-    puts "  remaining until cutoff: #{resp.headers['x-ratelimit-remaining']}"
-    puts "  reset in #{(resp.headers['x-ratelimit-reset'].to_i - Time.now.to_i)/60} minutes"
-
-    if (insights_events.empty?)
-      puts "Nothing in the payload!"
-      return
-    end
-    resp = send(insights_events)
-    # puts "headers:"
-    # ap resp.headers
-    # puts "\n"
-    if resp.status == 200
-      puts "Inserted #{insights_events.length} events"
-    else
-      $stderr.puts "Error sending to insights: #{resp.body}"
-    end
+    @last = id
+    puts ""
+    puts "  skipped #{dup} duplicates from last request" if dup > 0
+    puts "  remaining until cutoff: #{@requests_remaining}"
+    puts "  reset in #{@reset_in/60} minutes"
   end
-
-
-  def send(events)
-    @http.post "https://insights-collector.newrelic.com/v1/accounts/#{config['account']}/events",
-               events.to_json,
-               'X-Insert-Key' => config['insert_key']
-  end
-
 end
 
 if __FILE__ == $0

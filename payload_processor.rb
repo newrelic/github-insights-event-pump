@@ -1,5 +1,6 @@
-
+require "commits_processor"
 module PayloadProcessor
+  include CommitsProcessor
 
   def process(event)
 
@@ -7,7 +8,6 @@ module PayloadProcessor
 
     event_name = breakdown(find(event, 'type'), payload)
 
-    events = []
     event_attrs = { }
     event_attrs['eventType'] = 'GithubEvent'
     event_attrs['gitEventType'] = event_name
@@ -22,33 +22,31 @@ module PayloadProcessor
     merge_property(event_attrs, event, 'user', 'actor/login', 'payload/pusher/name')
 
     merge_property(event_attrs, event, 'org', 'org/login')
-    merge_property(event_attrs, payload, 'sha', 'sha')
-    merge_property(event_attrs, payload, 'text',
-                   'issue/body', 'comment/body', 'pull_request/body', 'message') { | comment |
-      event['textLength'] = comment.length
-      comment[0..4094]
-    }
+    merge_property(event_attrs, payload, 'sha', 'sha') { |sha| sha[0..6] }
+#    merge_property(event_attrs, payload, 'text',
+#                   'issue/body', 'comment/body', 'pull_request/body', 'message') { | comment |
+#      event['textLength'] = comment.length
+#      comment[0..4094]
+#    }
 
-    merge_counts(event_attrs, payload)
-
-    events << event_attrs
+    add event_attrs
     commits = find(payload, "commits")
-    events += process_commits(commits, event_attrs) if commits
+    process_commits(commits, event_attrs) if commits
     # events.each { |e|
     #   ap e, multiline: false
     # }
-    return events
   end
 
-  # Not used yet -- for later cleanup -- whk
   def merge_property(attrs, root, key, *paths)
+    paths = [key] if paths.empty?
     for path in paths do
       val = find(root, path)
       if val
         if block_given?
-          attrs[key] = yield val.to_s[0..2046]
+          val = yield val.to_s[0..2046]
+          attrs[key] = val if val
         else
-          attrs[key] = val.to_s[0..2046]
+          attrs[key] = val.is_a?(String) ? val[0..2046] : val
         end
         break
       end
@@ -68,10 +66,6 @@ module PayloadProcessor
   end
 
   private
-
-  def merge_counts counts, payload
-    counts.merge! count('wtf', payload, /wtf/i, 'issue/body','comment/body', 'pull_request/body', 'message')
-  end
 
   def count(name, payload, regex, *paths)
     count = 0
@@ -109,25 +103,5 @@ module PayloadProcessor
     return event_name
   end
 
-  def process_commits(commits, default_attrs={})
-    events = []
-    commits.each do | commit |
-      event = default_attrs.dup
-      event['gitEventType'] = 'Commit'
-      merge_property(event, commit, 'domain', 'author/email') { | address |
-        address.split('@').last
-      }
-      merge_property(event, commit, 'sha', 'sha')
-      merge_property(event, commit, 'text', 'message') { | comment |
-        event['textLength'] = comment.length
-        comment[0..4094]
-      }
-      merge_property(event, commit, 'userName', 'author/name')
-      merge_property(event, commit, 'user', 'author/name', 'author/email')
-      merge_counts(event, commit)
-      events << event
-    end
-    events
-  end
 end
 
