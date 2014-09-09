@@ -27,8 +27,8 @@ class Pump
       last_request = Time.now.to_i
       begin
         download_activity
-#      rescue => e
-#        $stderr.puts e
+      rescue => e
+        $stderr.puts e
       end
       if @requests_remaining <= 0
         puts "Reached request limit.  Sleeping #{@reset_in/60} minutes...."

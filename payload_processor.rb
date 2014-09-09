@@ -1,4 +1,5 @@
 require "commits_processor"
+require "time"
 module PayloadProcessor
   include CommitsProcessor
 
@@ -23,11 +24,14 @@ module PayloadProcessor
 
     merge_property(event_attrs, event, 'org', 'org/login')
     merge_property(event_attrs, payload, 'sha', 'sha') { |sha| sha[0..6] }
-#    merge_property(event_attrs, payload, 'text',
-#                   'issue/body', 'comment/body', 'pull_request/body', 'message') { | comment |
-#      event['textLength'] = comment.length
-#      comment[0..4094]
-#    }
+
+    opened = find(payload, "pull_request/created_at")
+    closed = find(payload, "pull_request/merged_at")
+    if (opened && closed)
+      age_in_hours = (Time.parse(closed) - Time.parse(opened)).to_f / (60.0 * 60.0)
+      event_attrs['ageOfPullRequest'] = age_in_hours
+    end
+
 
     add event_attrs
     commits = find(payload, "commits")

@@ -13,7 +13,7 @@ module HttpUtil
   def add(event)
     raise "Invalid event: #{event.inspect}" unless event.is_a?(Hash)
     events << event
-    if events.size > 10
+    if events.size > 100
       flush
     end
   end
