@@ -90,8 +90,8 @@ module PayloadProcessor
       # With closed actions we distinguish between PR's that were merged
       # and those that were closed without merging (cancelled).
       if (action == 'closed')
-        merged = find(payload, 'pull_request/merged')
-        action = (merged == 'true') ? 'Merged' : 'Cancelled'
+        merged = find(payload, 'pull_request/merged_at')
+        action = !merged.nil? ? 'Merged' : 'Cancelled'
       else
         action = action.capitalize
       end
