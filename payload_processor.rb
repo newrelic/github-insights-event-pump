@@ -27,11 +27,16 @@ module PayloadProcessor
 
     opened = find(payload, "pull_request/created_at")
     closed = find(payload, "pull_request/merged_at")
-    if (opened && closed)
+    if (opened && closed && event_name = 'PullRequestMerged')
       age_in_hours = (Time.parse(closed) - Time.parse(opened)).to_f / (60.0 * 60.0)
       event_attrs['ageOfPullRequest'] = age_in_hours
+      merge_property(event_attrs, payload, 'changedFiles', 'pull_request/changed_files')
+      merge_property(event_attrs, payload, 'reviewComments', 'pull_request/review_comments')
+      merge_property(event_attrs, payload, 'commits', 'pull_request/commits')
+      additions = find(payload, 'pull_request/additions')
+      deletions = find(payload, 'pull_request/deletions')
+      event_attrs['netLinesAdded'] = additions.to_i - deletions.to_i if (additions && deletions)
     end
-
 
     add event_attrs
     commits = find(payload, "commits")
