@@ -1,5 +1,17 @@
 module CommitsProcessor
 
+  def filetypes
+    return @filetypes if @filetypes
+    filetypes = {}
+    File.open(File.expand_path("../file_types.tsv", __FILE__), "r") do | input |
+      while !input.eof?
+        extension, language = input.readline.chomp.split(/\t/)
+        filetypes[extension] = language if extension
+      end
+    end
+    @filetypes = filetypes
+  end
+
   def process_commits(commits, default_attrs={})
     commits.each do | commit |
       process_commit commit, default_attrs
@@ -51,7 +63,13 @@ module CommitsProcessor
       event["fileName"] = filename
       # Get the file extension.  Exclude dotfiles.
       extension = filename[/[^\/]\.([^\/.]+$)/, 1]
-      event["extension"] = extension if extension
+      if extension
+        extension = extension.downcase
+        event["extension"] = extension
+        if filetype = filetypes[extension]
+          event["language"] = filetype
+        end
+      end
     end
     add event
   end

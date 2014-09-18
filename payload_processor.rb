@@ -27,7 +27,8 @@ module PayloadProcessor
 
     opened = find(payload, "pull_request/created_at")
     closed = find(payload, "pull_request/merged_at")
-    if (opened && closed && event_name = 'PullRequestMerged')
+    if (opened && closed)
+      event_name = 'PullRequestMerged'
       age_in_hours = (Time.parse(closed) - Time.parse(opened)).to_f / (60.0 * 60.0)
       event_attrs['ageOfPullRequest'] = age_in_hours
       merge_property(event_attrs, payload, 'changedFiles', 'pull_request/changed_files')
