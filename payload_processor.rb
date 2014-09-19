@@ -27,6 +27,10 @@ module PayloadProcessor
 
     opened = find(payload, "pull_request/created_at")
     closed = find(payload, "pull_request/merged_at")
+    merge_property(event_attrs, payload, 'pullRequestId', 'pull_request/id', )
+    merge_property(event_attrs, payload, 'title', 'pull_request/title')
+    merge_property(event_attrs, payload, 'ref', 'pull_request/head/ref', )
+
     if (opened && closed)
       event_name = 'PullRequestMerged'
       age_in_hours = (Time.parse(closed) - Time.parse(opened)).to_f / (60.0 * 60.0)
@@ -41,7 +45,13 @@ module PayloadProcessor
 
     add event_attrs
     commits = find(payload, "commits")
-    process_commits(commits, event_attrs) if commits
+    if commits
+      ref = find(payload, "ref")
+      if ref =~ %r{refs/heads/(.*)$}
+        event_attrs['ref'] = $1
+      end
+      process_commits(commits, event_attrs)
+    end
     # events.each { |e|
     #   ap e, multiline: false
     # }
