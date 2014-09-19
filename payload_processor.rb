@@ -30,6 +30,7 @@ module PayloadProcessor
     merge_property(event_attrs, payload, 'pullRequestId', 'pull_request/id', )
     merge_property(event_attrs, payload, 'title', 'pull_request/title')
     merge_property(event_attrs, payload, 'ref', 'pull_request/head/ref', )
+    merge_property(event_attrs, payload, 'link', 'pull_request/html_url', )
 
     if (opened && closed)
       event_name = 'PullRequestMerged'

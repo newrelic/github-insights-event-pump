@@ -47,8 +47,12 @@ module CommitsProcessor
     end
     merge_property(event, commit_payload, 'addedLines', 'stats/additions')
     merge_property(event, commit_payload, 'deletedLines', 'stats/deletions')
+    url = find commit, 'url'
+    if url
+      link = url.gsub(%r{api\.github\.com}, 'github.com').gsub('repos/','')
+      event['link'] = link
+    end
     add event
-
   end
 
   def process_file file_payload, default_attrs={}
