@@ -23,6 +23,7 @@ class Pump
   end
 
   def run
+    @requests_remaining = 5000
     while (true) do
       last_request = Time.now.to_i
       begin
