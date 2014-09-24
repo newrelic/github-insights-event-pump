@@ -1,7 +1,17 @@
 require "commits_processor"
 require "time"
-module PayloadProcessor
-  include CommitsProcessor
+class PayloadProcessor
+
+  include PayloadUtils
+
+  def initialize(config, insights_event_queue)
+    @commits_queue = Queue.new
+    @insights_event_queue = insights_event_queue
+    CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
+    CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
+    CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
+    CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
+  end
 
   def process(event)
 
@@ -51,38 +61,7 @@ module PayloadProcessor
       if ref =~ %r{refs/heads/(.*)$}
         event_attrs['ref'] = $1
       end
-      process_commits(commits, event_attrs)
-    end
-    # events.each { |e|
-    #   ap e, multiline: false
-    # }
-  end
-
-  def merge_property(attrs, root, key, *paths)
-    paths = [key] if paths.empty?
-    for path in paths do
-      val = find(root, path)
-      if val
-        if block_given?
-          val = yield val.to_s[0..2046]
-          attrs[key] = val if val
-        else
-          attrs[key] = val.is_a?(String) ? val[0..2046] : val
-        end
-        break
-      end
-    end
-  end
-
-
-  # Traverse the hash via '/' separated keys, returning nil if any part is missing
-  def find(hash, path)
-    return hash if path.nil?
-    segment, remainder = path.split('/', 2)
-    if hash.include? segment
-      find hash[segment], remainder
-    else
-      nil
+      @commits_queue << { common_attrs: event_attrs, commits: commits }
     end
   end
 
@@ -122,6 +101,10 @@ module PayloadProcessor
       event_name = "Commit#{state.capitalize}"
     end
     return event_name
+  end
+
+  def add event
+    @insights_event_queue << event
   end
 
 end

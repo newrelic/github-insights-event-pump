@@ -1,4 +1,36 @@
-module CommitsProcessor
+require 'payload_utils'
+class CommitsProcessor
+
+  include PayloadUtils
+
+  def initialize(insights_queue, commits_queue, config)
+    @insights_event_queue = insights_queue
+    @commits_queue = commits_queue
+    @event_io = EventIO.new config
+  end
+
+  def run
+    Thread.new do
+      begin
+        while (true) do
+          next_job = @commits_queue.pop
+          commits = next_job[:commits]
+          common_attrs = next_job[:common_attrs]
+          commits.each do | commit |
+            process_commit commit, common_attrs
+          end
+        end
+      rescue => e
+        $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"
+      end
+    end
+  end
+
+private
+
+  def add event
+    @insights_event_queue << event
+  end
 
   def filetypes
     return @filetypes if @filetypes
@@ -12,18 +44,12 @@ module CommitsProcessor
     @filetypes = filetypes
   end
 
-  def process_commits(commits, default_attrs={})
-    commits.each do | commit |
-      process_commit commit, default_attrs
-    end
-  end
-
-  def process_commit commit, default_attrs={}
-    event = default_attrs.dup
+  def process_commit commit, common_attrs
+    event = common_attrs.dup
     sha = find commit, 'sha'
     url = find commit, 'url'
 
-    commit_payload = get url
+    commit_payload = @event_io.github_get url
 
     event['gitEventType'] = 'Commit'
     merge_property(event, commit, 'domain', 'author/email') do | address |
@@ -55,8 +81,8 @@ module CommitsProcessor
     add event
   end
 
-  def process_file file_payload, default_attrs={}
-    event = default_attrs.dup
+  def process_file file_payload, common_attrs={}
+    event = common_attrs.dup
     event['gitEventType'] = 'Change'
     lines_deleted = find file_payload, "deletions"
     lines_changed = find file_payload, "changes"

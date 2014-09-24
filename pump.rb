@@ -6,11 +6,12 @@ require 'awesome_print'
 require 'faraday'
 require 'yaml'
 require 'payload_processor'
-require 'http_util'
+require 'event_io'
+require 'payload_utils'
 
 class Pump
-  include PayloadProcessor
-  include HttpUtil
+  include PayloadUtils
+
   attr_reader :config
 
   def initialize(config)
@@ -20,20 +21,23 @@ class Pump
     raise "Need config 'account'" unless config['account']
     raise "Need config 'insert_key'" unless config['insert_key']
     @config = config
+    @event_io = EventIO.new config
+    @processor = PayloadProcessor.new config, @event_io.event_queue
   end
 
   def run
-    @requests_remaining = 5000
+    @event_io.run_send_loop
+
     while (true) do
       last_request = Time.now.to_i
       begin
         download_activity
-      rescue => e
-        $stderr.puts e
+#      rescue => e
+#        $stderr.puts e
       end
-      if @requests_remaining <= 0
-        puts "Reached request limit.  Sleeping #{@reset_in/60} minutes...."
-        sleep @reset_in
+      if @event_io.requests_remaining <= 0
+        puts "Reached request limit.  Sleeping #{@event_io.reset_in/60} minutes...."
+        sleep @event_io.reset_in
       else
         interval = (last_request + config['interval']) - Time.now.to_i
         sleep interval if interval > 0
@@ -42,10 +46,10 @@ class Pump
   end
 
   def download_activity
-    payload = get "https://api.github.com/events"
+    payload = @event_io.github_get "https://api.github.com/events"
     puts "\n#{Time.now.strftime "%D %H:%M:%S"}: processing #{payload.length} github events..."
-    if @last && payload.first['id'].to_i > @last
-      puts "  missed up to #{payload.first['id'].to_i - @last - 1} events."
+    if @last && payload.last['id'].to_i > @last
+      puts "  missed up to #{payload.last['id'].to_i - @last - 1} events."
     end
     dup = 0
     @last ||= 0
@@ -56,17 +60,21 @@ class Pump
         dup += 1
         next
       end
-      process github_event
+      @processor.process github_event
     end
-    @last = id
+    @last = id.to_i
     puts ""
     puts "  skipped #{dup} duplicates from last request" if dup > 0
-    puts "  remaining until cutoff: #{@requests_remaining}"
-    puts "  reset in #{@reset_in/60} minutes"
+    puts "  remaining until cutoff: #{@event_io.requests_remaining}"
+    puts "  reset in #{@event_io.reset_in/60} minutes"
   end
 end
 
 if __FILE__ == $0
+  if ARGV[0] == "-n"
+    $dryrun = true
+    puts "DRY RUN"
+  end
   Pump.new(YAML.load(File.read("./config.yml"))).run
 end
 
