@@ -19,9 +19,9 @@ class CommitsProcessor
           commits.each do | commit |
             process_commit commit, common_attrs
           end
-          if (@commits_queue.size > 5000)
+          if (@commits_queue.size > 500)
             $stderr.puts "Error: commits queue length exceeded 10000; dumping 2000"
-            2000.times { @commits_queue.pop }
+            300.times { @commits_queue.pop }
           end
         rescue => e
           $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"

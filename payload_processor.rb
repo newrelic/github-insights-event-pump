@@ -13,6 +13,10 @@ class PayloadProcessor
     CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
   end
 
+  def commit_queue_length
+    @commits_queue.size
+  end
+
   def process(event)
 
     payload = find(event, 'payload')
@@ -62,9 +66,6 @@ class PayloadProcessor
         event_attrs['ref'] = $1
       end
       @commits_queue << { common_attrs: event_attrs, commits: commits }
-      if @commits_queue.size > 100
-        $stderr.puts "Commits backlog: #{@commits_queue.size}"
-      end
     end
   end
 
