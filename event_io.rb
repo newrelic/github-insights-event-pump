@@ -59,6 +59,7 @@ class EventIO
         ap event_buffer.inspect
       end
     end
+    event_buffer.clear
   rescue
     event_buffer.clear
     raise

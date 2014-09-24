@@ -65,7 +65,8 @@ class Pump
     msg << "#{Time.now.strftime "%D %H:%M:%S"}"
     msg << "#{processed} events"
     msg << "remaining: #{@event_io.requests_remaining}"
-    msg << "queue: #{@processor.commit_queue_length}"
+    msg << "in queue: #{@processor.commit_queue_length}"
+    msg << "out queue: #{@event_io.event_queue.size}"
     msg << "reset in #{@event_io.reset_in/60} min"
     msg << "#{dup} dups" if dup > 0
     msg << "id gap #{next_first - @last - 1}" if next_first > @last
