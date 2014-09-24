@@ -51,6 +51,7 @@ class Pump
     dup = 0
     @last ||= 0
     print "  "
+    processed = 0
     while (github_event = payload.pop) do
       id = github_event['id'].to_i
       if (id <= @last)
@@ -58,10 +59,11 @@ class Pump
         next
       end
       @processor.process github_event
+      processed += 1
     end
     msg = []
     msg << "#{Time.now.strftime "%D %H:%M:%S"}"
-    msg << "#{payload.length} events"
+    msg << "#{processed} events"
     msg << "remaining: #{@event_io.requests_remaining}"
     msg << "reset in #{@event_io.reset_in/60} min"
     msg << "#{dup} dups" if dup > 0
