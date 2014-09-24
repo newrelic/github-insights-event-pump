@@ -29,7 +29,7 @@ class Pump
     @event_io.run_send_loop
 
     while (true) do
-      last_request = Time.now.to_i
+      last_request = Time.now.to_f
       begin
         download_activity
       rescue => e
@@ -39,7 +39,7 @@ class Pump
         puts "Reached request limit.  Sleeping #{@event_io.reset_in/60} minutes...."
         sleep @event_io.reset_in
       else
-        interval = (last_request + config['interval']) - Time.now.to_i
+        interval = (last_request + config['interval']) - Time.now.to_f
         sleep interval if interval > 0
       end
     end
