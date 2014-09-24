@@ -10,6 +10,7 @@ class PayloadProcessor
     CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
     CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
     CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
+    CommitsProcessor.new(insights_event_queue, @commits_queue, config).run
   end
 
   def process(event)
