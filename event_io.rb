@@ -12,7 +12,9 @@ class EventIO
   def github_get url
     print "."
     resp = http.get url, {}, 'Authorization' => "token #{config['token']}"
-    if resp.status != 200
+    if resp.status == 404
+      raise "Commit not found: #{url}"
+    elsif resp.status != 200
       raise "Problem with request: #{resp.inspect}"
     end
     # ap resp.headers
@@ -23,17 +25,17 @@ class EventIO
 
   def run_send_loop
     Thread.new do
-      begin
         event_buffer = []
         while(true) do
-          while (event_buffer.size < 100) do
-            event_buffer << event_queue.pop
+          begin
+            while (event_buffer.size < 100) do
+              event_buffer << event_queue.pop
+            end
+            flush event_buffer
+          rescue => e
+            $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"
           end
-          flush event_buffer
         end
-      rescue => e
-        $stderr.puts "#{e}: #{e.backtracke.join("\n  ")}"
-      end
     end
   end
 
@@ -57,6 +59,8 @@ class EventIO
         ap event_buffer.inspect
       end
     end
+  rescue
     event_buffer.clear
+    raise
   end
 end

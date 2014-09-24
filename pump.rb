@@ -32,8 +32,8 @@ class Pump
       last_request = Time.now.to_i
       begin
         download_activity
-#      rescue => e
-#        $stderr.puts e
+      rescue => e
+        $stderr.puts "#{e}: #{e.backtrace.join("\n   ")}"
       end
       if @event_io.requests_remaining <= 0
         puts "Reached request limit.  Sleeping #{@event_io.reset_in/60} minutes...."

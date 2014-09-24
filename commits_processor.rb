@@ -11,17 +11,21 @@ class CommitsProcessor
 
   def run
     Thread.new do
-      begin
-        while (true) do
+      while (true) do
+        begin
           next_job = @commits_queue.pop
           commits = next_job[:commits]
           common_attrs = next_job[:common_attrs]
           commits.each do | commit |
             process_commit commit, common_attrs
           end
+          if (@commits_queue.size > 5000)
+            $stderr.puts "Error: commits queue length exceeded 10000; dumping 2000"
+            2000.times { @commits_queue.pop }
+          end
+        rescue => e
+          $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"
         end
-      rescue => e
-        $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"
       end
     end
   end
@@ -49,8 +53,12 @@ private
     sha = find commit, 'sha'
     url = find commit, 'url'
 
-    commit_payload = @event_io.github_get url
-
+    begin
+      commit_payload = @event_io.github_get url
+    rescue => e
+      $stderr.puts "\nProblem getting commit payload: #{e}: #{e.backtrace.join("\n   ")}"
+      return
+    end
     event['gitEventType'] = 'Commit'
     merge_property(event, commit, 'domain', 'author/email') do | address |
       domain = address.split('@').last
@@ -66,7 +74,7 @@ private
     files = find(commit_payload,'files')
     files.each do | file |
       process_file(file, event)
-    end
+    end if files
 
     merge_property(event, commit, 'sha', 'sha') do | sha |
       sha[0..6]
