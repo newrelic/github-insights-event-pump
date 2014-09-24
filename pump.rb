@@ -47,10 +47,7 @@ class Pump
 
   def download_activity
     payload = @event_io.github_get "https://api.github.com/events"
-    puts "\n#{Time.now.strftime "%D %H:%M:%S"}: processing #{payload.length} github events..."
-    if @last && payload.last['id'].to_i > @last
-      puts "  missed up to #{payload.last['id'].to_i - @last - 1} events."
-    end
+    next_first = payload.last['id'].to_i
     dup = 0
     @last ||= 0
     print "  "
@@ -62,11 +59,15 @@ class Pump
       end
       @processor.process github_event
     end
-    @last = id.to_i
-    puts ""
-    puts "  skipped #{dup} duplicates from last request" if dup > 0
-    puts "  remaining until cutoff: #{@event_io.requests_remaining}"
-    puts "  reset in #{@event_io.reset_in/60} minutes"
+    msg = []
+    msg << "#{Time.now.strftime "%D %H:%M:%S"}"
+    msg << "#{payload.length} events"
+    msg << "remaining: #{@event_io.requests_remaining}"
+    msg << "reset in #{@event_io.reset_in/60} min"
+    msg << "#{dup} dups" if dup > 0
+    msg << "id gap #{next_first - @last - 1}" if next_first > @last
+    puts "\n#{msg.join(";\t")}"
+    @last = id.to_i if id
   end
 end
 
