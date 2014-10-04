@@ -32,7 +32,7 @@ class EventIO
               event_buffer << event_queue.pop
             end
             flush event_buffer
-          rescue => e
+          rescue Exception => e
             $stderr.puts "#{e}: #{e.backtrace.join("\n  ")}"
           end
         end
